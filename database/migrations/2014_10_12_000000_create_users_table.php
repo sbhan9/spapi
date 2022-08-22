@@ -22,6 +22,7 @@ return new class extends Migration
             $table->text('alamat');
             $table->string('api_key')->nullable();
             $table->string('user_token')->nullable();
+            $table->bigInteger('limit')->default(5);
             $table->timestamps();
         });
     }

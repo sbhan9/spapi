@@ -23,4 +23,5 @@ Route::middleware('auth:sanctum')->controller(AdminController::class)->group(fun
     Route::get('/students', 'students');
     Route::post('/add_siswa', 'add_siswa');
     Route::post('/update_siswa', 'update_siswa');
+    Route::post('/delete_siswa', 'delete_siswa');
 });

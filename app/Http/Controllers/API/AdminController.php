@@ -13,7 +13,7 @@ class AdminController extends Controller
     /* method cek apakah di dalam url ada api key atau tidak */
     private function cek_api_key($api_key)
     {
-        /* ambil data user untuk login */
+        /* ambil data user yang sedang login */
         $data_user = User::firstWhere('username', auth()->user()->username);
 
         /* cek url apakah ada request key */
@@ -166,6 +166,44 @@ class AdminController extends Controller
                     } else {
                         return response()->json([
                             'msg' => 'update siswa failed'
+                        ]);
+                    }
+                } else {
+                    return response()->json([
+                        'msg' => 'api key not registered'
+                    ]);
+                }
+            } else {
+                return response()->json([
+                    'msg' => 'id siswa not registered'
+                ]);
+            }
+        } else {
+            return response()->json([
+                'msg' => 'id siswa required'
+            ]);
+        }
+    }
+
+    public  function delete_siswa(Request $request)
+    {
+        /* cek di dalam formnya ada request id ngga */
+        if (!empty($request->id_siswa)) {
+            /* jika ada cek datanya */
+            $data_siswa = Student::firstWhere('id', $request->id_siswa);
+            if ($data_siswa) {
+                /* cek apikey di dalam request */
+                if ($this->cek_api_key($request->key)) {
+                    /* proses delete siswa */
+                    $delete_siswa = Student::where('id', $request->id_siswa)->delete();
+                    /* jika prosesnya berhasil atau gagal maka tampilkan pesan */
+                    if ($delete_siswa) {
+                        return response()->json([
+                            'msg' => 'deleted siswa success',
+                        ]);
+                    } else {
+                        return response()->json([
+                            'msg' => 'deleted siswa failed',
                         ]);
                     }
                 } else {

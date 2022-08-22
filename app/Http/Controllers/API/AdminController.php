@@ -29,6 +29,19 @@ class AdminController extends Controller
         }
     }
 
+    private function update_limit()
+    {
+        $data_user = User::firstWhere('username', auth()->user()->username);
+        if ($data_user->limit != 0) {
+            $limit = $data_user->limit - 1;
+            return User::where('username', auth()->user()->username)->update([
+                'limit' => $limit
+            ]);
+        } else {
+            return false;
+        }
+    }
+
     public function students(Request $request)
     {
         if ($this->cek_api_key($request->key)) {
@@ -65,26 +78,36 @@ class AdminController extends Controller
                 ]);
             }
 
-            /* proses tambah siswa baru */
-            $add_siswa = Student::create([
-                'nama' => $request->nama,
-                'kelas' => $request->kelas,
-                'nis' => $request->nis,
-                'nisn' => $request->nisn,
-                'email' => $request->email,
-                'alamat' => $request->alamat,
-                'user_id' => auth()->user()->id,
-            ]);
-
-            /* tampilkan pesan jika proses input data berhasil atau ngga */
-            if ($add_siswa) {
-                return response()->json([
-                    'msg' => 'add siswa success',
-                    'siswa' => $request->post()
+            /* cek limit user */
+            if ($this->update_limit()) {
+                /* proses tambah siswa baru */
+                $add_siswa = Student::create([
+                    'nama' => $request->nama,
+                    'kelas' => $request->kelas,
+                    'nis' => $request->nis,
+                    'nisn' => $request->nisn,
+                    'email' => $request->email,
+                    'alamat' => $request->alamat,
+                    'user_id' => auth()->user()->id,
                 ]);
+
+                /* tampilkan pesan jika proses input data berhasil atau ngga */
+                if ($add_siswa) {
+                    return response()->json([
+                        'msg' => 'add siswa success',
+                        'siswa' => $request->post()
+                    ]);
+                } else {
+                    return response()->json([
+                        'msg' => 'add siswa failed'
+                    ]);
+                }
             } else {
                 return response()->json([
-                    'msg' => 'add siswa failed'
+                    'msg' => 'add siswa failed',
+                    'error' => [
+                        'msg' => 'limit out'
+                    ]
                 ]);
             }
         } else {
@@ -146,26 +169,36 @@ class AdminController extends Controller
                         ]);
                     }
 
-                    /* update data siswa ke database */
-                    $update_siswa = Student::where('id', $request->id_siswa)->update([
-                        'nama' => $request->nama,
-                        'kelas' => $request->kelas,
-                        'nis' => $request->nis,
-                        'nisn' => $request->nisn,
-                        'email' => $request->email,
-                        'alamat' => $request->alamat,
-                        'user_id' => auth()->user()->id,
-                    ]);
-
-                    /* tampilkan pesan jika update data berhasil atau gagal */
-                    if ($update_siswa) {
-                        return response()->json([
-                            'msg' => 'update siswa success',
-                            'siswa' => $request->post()
+                    /* cek limit user */
+                    if ($this->update_limit()) {
+                        /* update data siswa ke database */
+                        $update_siswa = Student::where('id', $request->id_siswa)->update([
+                            'nama' => $request->nama,
+                            'kelas' => $request->kelas,
+                            'nis' => $request->nis,
+                            'nisn' => $request->nisn,
+                            'email' => $request->email,
+                            'alamat' => $request->alamat,
+                            'user_id' => auth()->user()->id,
                         ]);
+
+                        /* tampilkan pesan jika update data berhasil atau gagal */
+                        if ($update_siswa) {
+                            return response()->json([
+                                'msg' => 'update siswa success',
+                                'siswa' => $request->post()
+                            ]);
+                        } else {
+                            return response()->json([
+                                'msg' => 'update siswa failed'
+                            ]);
+                        }
                     } else {
                         return response()->json([
-                            'msg' => 'update siswa failed'
+                            'msg' => 'update siswa failed',
+                            'error' => [
+                                'msg' => 'limit out'
+                            ]
                         ]);
                     }
                 } else {
@@ -194,16 +227,26 @@ class AdminController extends Controller
             if ($data_siswa) {
                 /* cek apikey di dalam request */
                 if ($this->cek_api_key($request->key)) {
-                    /* proses delete siswa */
-                    $delete_siswa = Student::where('id', $request->id_siswa)->delete();
-                    /* jika prosesnya berhasil atau gagal maka tampilkan pesan */
-                    if ($delete_siswa) {
-                        return response()->json([
-                            'msg' => 'deleted siswa success',
-                        ]);
+                    /* cek limit user */
+                    if ($this->update_limit()) {
+                        /* proses delete siswa */
+                        $delete_siswa = Student::where('id', $request->id_siswa)->delete();
+                        /* jika prosesnya berhasil atau gagal maka tampilkan pesan */
+                        if ($delete_siswa) {
+                            return response()->json([
+                                'msg' => 'deleted siswa success',
+                            ]);
+                        } else {
+                            return response()->json([
+                                'msg' => 'deleted siswa failed',
+                            ]);
+                        }
                     } else {
                         return response()->json([
-                            'msg' => 'deleted siswa failed',
+                            'msg' => 'delete siswa failed',
+                            'error' => [
+                                'msg' => 'limit out'
+                            ]
                         ]);
                     }
                 } else {
